@@ -1,17 +1,18 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Customer } from '@/lib/db/schema';
-import { CustomerResponse } from '@/lib/types/customer';
-import { CustomerForm } from '@/components/customers/customer-form';
-import { ArrowLeft, AlertCircle } from 'lucide-react';
-import Link from 'next/link';
+import { useState, useEffect, use } from "react";
+import { Customer } from "@/lib/db/schema";
+import { CustomerResponse } from "@/lib/types/customer";
+import { CustomerForm } from "@/components/customers/customer-form";
+import { ArrowLeft, AlertCircle } from "lucide-react";
+import Link from "next/link";
 
 interface EditCustomerPageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default function EditCustomerPage({ params }: EditCustomerPageProps) {
+  const resolvedParams = use(params);
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -22,27 +23,29 @@ export default function EditCustomerPage({ params }: EditCustomerPageProps) {
         setLoading(true);
         setError(null);
 
-        const response = await fetch(`/api/customers/${params.id}`);
+        const response = await fetch(`/api/customers/${resolvedParams.id}`);
 
         if (!response.ok) {
           if (response.status === 404) {
-            throw new Error('Customer not found');
+            throw new Error("Customer not found");
           }
-          throw new Error('Failed to fetch customer');
+          throw new Error("Failed to fetch customer");
         }
 
         const data: CustomerResponse = await response.json();
         setCustomer(data.data);
       } catch (err) {
-        console.error('Error fetching customer:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load customer');
+        console.error("Error fetching customer:", err);
+        setError(
+          err instanceof Error ? err.message : "Failed to load customer",
+        );
       } finally {
         setLoading(false);
       }
     };
 
     fetchCustomer();
-  }, [params.id]);
+  }, [resolvedParams.id]);
 
   if (loading) {
     return (

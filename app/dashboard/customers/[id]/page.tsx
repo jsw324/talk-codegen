@@ -1,21 +1,35 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { Customer } from '@/lib/db/schema';
-import { CustomerResponse } from '@/lib/types/customer';
-import { ArrowLeft, Edit, Trash2, Mail, Phone, Building, User, Calendar, AlertCircle } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
+import { Customer } from "@/lib/db/schema";
+import { CustomerResponse } from "@/lib/types/customer";
+import {
+  ArrowLeft,
+  Edit,
+  Trash2,
+  Mail,
+  Phone,
+  Building,
+  User,
+  Calendar,
+  AlertCircle,
+} from "lucide-react";
 
 interface CustomerDetailPageProps {
   params: { id: string };
 }
 
-export default function CustomerDetailPage({ params }: CustomerDetailPageProps) {
+export default function CustomerDetailPage({
+  params,
+}: CustomerDetailPageProps) {
   const router = useRouter();
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const { id } = useParams();
 
   useEffect(() => {
     const fetchCustomer = async () => {
@@ -23,56 +37,63 @@ export default function CustomerDetailPage({ params }: CustomerDetailPageProps) 
         setLoading(true);
         setError(null);
 
-        const response = await fetch(`/api/customers/${params.id}`);
+        const response = await fetch(`/api/customers/${id}`);
 
         if (!response.ok) {
           if (response.status === 404) {
-            throw new Error('Customer not found');
+            throw new Error("Customer not found");
           }
-          throw new Error('Failed to fetch customer');
+          throw new Error("Failed to fetch customer");
         }
 
         const data: CustomerResponse = await response.json();
         setCustomer(data.data);
       } catch (err) {
-        console.error('Error fetching customer:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load customer');
+        console.error("Error fetching customer:", err);
+        setError(
+          err instanceof Error ? err.message : "Failed to load customer",
+        );
       } finally {
         setLoading(false);
       }
     };
 
     fetchCustomer();
-  }, [params.id]);
+  }, [id]);
 
   const handleDelete = async () => {
-    if (!customer || !confirm('Are you sure you want to delete this customer? This action cannot be undone.')) {
+    if (
+      !customer ||
+      !confirm(
+        "Are you sure you want to delete this customer? This action cannot be undone.",
+      )
+    ) {
       return;
     }
 
     try {
       const response = await fetch(`/api/customers/${customer.id}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
 
       if (!response.ok) {
-        throw new Error('Failed to delete customer');
+        throw new Error("Failed to delete customer");
       }
 
-      router.push('/dashboard/customers');
+      router.push("/dashboard/customers");
     } catch (err) {
-      console.error('Error deleting customer:', err);
-      alert('Failed to delete customer. Please try again.');
+      console.error("Error deleting customer:", err);
+      alert("Failed to delete customer. Please try again.");
     }
   };
 
   const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
+    return new Intl.DateTimeFormat("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     }).format(new Date(date));
   };
 
@@ -146,7 +167,9 @@ export default function CustomerDetailPage({ params }: CustomerDetailPageProps) 
 
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200">
-          <h1 className="text-2xl font-bold text-gray-900">{customer.companyName}</h1>
+          <h1 className="text-2xl font-bold text-gray-900">
+            {customer.companyName}
+          </h1>
           <p className="text-gray-600 mt-1">Customer Details</p>
         </div>
 
@@ -156,16 +179,24 @@ export default function CustomerDetailPage({ params }: CustomerDetailPageProps) 
               <div className="flex items-center">
                 <Building className="w-5 h-5 text-gray-400 mr-3" />
                 <div>
-                  <dt className="text-sm font-medium text-gray-500">Company Name</dt>
-                  <dd className="text-lg text-gray-900">{customer.companyName}</dd>
+                  <dt className="text-sm font-medium text-gray-500">
+                    Company Name
+                  </dt>
+                  <dd className="text-lg text-gray-900">
+                    {customer.companyName}
+                  </dd>
                 </div>
               </div>
 
               <div className="flex items-center">
                 <User className="w-5 h-5 text-gray-400 mr-3" />
                 <div>
-                  <dt className="text-sm font-medium text-gray-500">Contact Name</dt>
-                  <dd className="text-lg text-gray-900">{customer.contactName}</dd>
+                  <dt className="text-sm font-medium text-gray-500">
+                    Contact Name
+                  </dt>
+                  <dd className="text-lg text-gray-900">
+                    {customer.contactName}
+                  </dd>
                 </div>
               </div>
 
@@ -174,7 +205,10 @@ export default function CustomerDetailPage({ params }: CustomerDetailPageProps) 
                 <div>
                   <dt className="text-sm font-medium text-gray-500">Email</dt>
                   <dd className="text-lg text-gray-900">
-                    <a href={`mailto:${customer.email}`} className="text-blue-600 hover:text-blue-700">
+                    <a
+                      href={`mailto:${customer.email}`}
+                      className="text-blue-600 hover:text-blue-700"
+                    >
                       {customer.email}
                     </a>
                   </dd>
@@ -187,7 +221,10 @@ export default function CustomerDetailPage({ params }: CustomerDetailPageProps) 
                   <dt className="text-sm font-medium text-gray-500">Phone</dt>
                   <dd className="text-lg text-gray-900">
                     {customer.phone ? (
-                      <a href={`tel:${customer.phone}`} className="text-blue-600 hover:text-blue-700">
+                      <a
+                        href={`tel:${customer.phone}`}
+                        className="text-blue-600 hover:text-blue-700"
+                      >
                         {customer.phone}
                       </a>
                     ) : (
@@ -203,15 +240,21 @@ export default function CustomerDetailPage({ params }: CustomerDetailPageProps) 
                 <Calendar className="w-5 h-5 text-gray-400 mr-3" />
                 <div>
                   <dt className="text-sm font-medium text-gray-500">Created</dt>
-                  <dd className="text-lg text-gray-900">{formatDate(customer.createdAt)}</dd>
+                  <dd className="text-lg text-gray-900">
+                    {formatDate(customer.createdAt)}
+                  </dd>
                 </div>
               </div>
 
               <div className="flex items-center">
                 <Calendar className="w-5 h-5 text-gray-400 mr-3" />
                 <div>
-                  <dt className="text-sm font-medium text-gray-500">Last Updated</dt>
-                  <dd className="text-lg text-gray-900">{formatDate(customer.updatedAt)}</dd>
+                  <dt className="text-sm font-medium text-gray-500">
+                    Last Updated
+                  </dt>
+                  <dd className="text-lg text-gray-900">
+                    {formatDate(customer.updatedAt)}
+                  </dd>
                 </div>
               </div>
             </div>
@@ -226,7 +269,10 @@ export default function CustomerDetailPage({ params }: CustomerDetailPageProps) 
         </div>
         <div className="p-6">
           <div className="text-center py-8 text-gray-500">
-            <p>Sales history will be implemented when sales functionality is added.</p>
+            <p>
+              Sales history will be implemented when sales functionality is
+              added.
+            </p>
           </div>
         </div>
       </div>
